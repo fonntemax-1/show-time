@@ -1,0 +1,41 @@
+name: Update Indonesia City List
+
+on:
+  schedule:
+    # 01:00 WITA (UTC+8) every night
+    - cron: "0 17 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-indonesia-city-list
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Refresh province and regency data
+        run: python scripts/update-region-data.py
+      - name: Commit cache only when changed
+        run: |
+          if git diff --quiet -- data/kabupaten-kota.json; then
+            echo "Regional data unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/kabupaten-kota.json
+          git commit -m "Update Indonesia city list cache"
+          git push origin HEAD:main
