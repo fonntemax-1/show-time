@@ -1,6 +1,11 @@
 name: Update Indonesia City List
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/update-city-list.yml"
+      - "scripts/update-region-data.py"
   schedule:
     # 01:00 WITA (UTC+8) every night
     - cron: "0 17 * * *"
