@@ -65,7 +65,7 @@ if(isRamadanActive&&maghribMinute>=0)messageEvents.push({key:'Maghrib',title:'WA
 const active=messageEvents.filter(e=>{const elapsed=now-e.minute*60;return elapsed>=0&&elapsed<e.duration}).sort((a,b)=>b.priority-a.priority)[0];
 if(active){
 const selectedLabel=$('city').selectedOptions[0]?.dataset.label||'';
-const prefix=/^\\s*KABUPATEN\\b/i.test(selectedLabel)?'KABUPATEN':'KOTA';
+const prefix=/^\s*KABUPATEN\b/i.test(selectedLabel)?'KABUPATEN':'KOTA';
 $('nextName').textContent=active.title;
 $('countdown').textContent=prefix+' '+city.toLocaleUpperCase('id-ID')+' DAN SEKITARNYA';
 $('countdown').classList.add('is-message-location');
