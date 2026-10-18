@@ -29,6 +29,11 @@ header .header-date{margin-left:auto;flex-shrink:0}header .header-info{margin-le
 .focus-countdown{font-size:clamp(38px,5.2vw,70px);letter-spacing:.025em;white-space:nowrap}
 @media(max-width:800px){.countdown-panel{min-height:clamp(230px,36vh,360px)}}
 @media(max-width:480px){.countdown-panel{min-height:220px;gap:18px}.focus-prayer{font-size:clamp(28px,8vw,38px)}.focus-countdown{font-size:clamp(32px,8.5vw,44px)}}
+
+/* Temporary event messages replace the countdown without changing schedule calculations. */
+#countdown.is-message-location{font-size:clamp(18px,2.6vw,34px);line-height:1.35;letter-spacing:.055em;white-space:normal;overflow-wrap:anywhere;max-width:100%}
+@media(max-width:800px){#countdown.is-message-location{font-size:clamp(18px,4vw,28px)}}
+@media(max-width:480px){#countdown.is-message-location{font-size:clamp(16px,4.5vw,22px);letter-spacing:.025em}}
 </style></head>
 <body><div class="page">
 <header><div class="brand"></div><div class="header-info"><div class="header-clock" id="headerClock" aria-label="Jam sekarang">--:--:--</div><div class="header-calendar"><div id="headerGregorian">Memuat tanggal…</div><div id="headerHijri">Kalender Hijriah</div></div></div></header>
@@ -47,7 +52,34 @@ function status(t,err=false){$('status').textContent=t;$('status').classList.tog
 function clean(s){const m=String(s||'').match(/(\d{1,2}:\d{2})/);return m?m[1]:'--:--'}
 function mins(s){const a=clean(s).split(':');return a.length===2?+a[0]*60 + +a[1]:-1}
 function dates(){const n=new Date(),parts=zonedParts(n),t=new Intl.DateTimeFormat('id-ID',{timeZone:activeZone,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(n);$('headerClock').innerHTML=t+' <span class="zone-label">'+activeZoneLabel+'</span>';$('headerGregorian').textContent=(hijriText||'Memuat kalender Hijriah…')+' | '+new Intl.DateTimeFormat('id-ID',{...dateFmtOptions,timeZone:activeZone}).format(n);$('headerHijri').textContent='';const key=localDateKey(parts);if(times&&lastLoadedLocalDate&&key!==lastLoadedLocalDate)loadPrayer()}
-function next(){if(!times)return;const n=zonedParts(),now=n.hour*3600+n.minute*60+n.second;let arr=prayers.filter(p=>!p.ramadanOnly||isRamadanActive).map(p=>({...p,m:mins(times[p.key])})).filter(p=>!p.notPrayer&&p.m>=0),p=arr.find(x=>x.m*60>now),remaining,tomorrow=false;if(!p){p=arr[0];if(!p)return;remaining=86400-now+p.m*60;tomorrow=true}else remaining=p.m*60-now;$('nextName').textContent=p.name;$('countdown').textContent=[Math.floor(remaining/3600),Math.floor(remaining%3600/60),remaining%60].map(x=>String(x).padStart(2,'0')).join(':');document.querySelectorAll('.prayer').forEach(el=>el.classList.toggle('active',el.dataset.key===p.key&&!tomorrow))}
+function next(){
+if(!times)return;
+const n=zonedParts(),now=n.hour*3600+n.minute*60+n.second;
+const messageEvents=[];
+const imsakMinute=mins(times.Imsak);
+if(isRamadanActive&&imsakMinute>=0)messageEvents.push({key:'Imsak',title:'WAKTU IMSAK',duration:120,minute:imsakMinute,priority:2});
+const prayerMessages=[{key:'Fajr',name:'SUBUH'},{key:'Dhuhr',name:'ZUHUR'},{key:'Asr',name:'ASAR'},{key:'Maghrib',name:'MAGRIB'},{key:'Isha',name:'ISYA'}];
+for(const p of prayerMessages){const minute=mins(times[p.key]);if(minute>=0)messageEvents.push({key:p.key,title:'WAKTU SHOLAT '+p.name,duration:900,minute,priority:1})}
+const maghribMinute=mins(times.Maghrib);
+if(isRamadanActive&&maghribMinute>=0)messageEvents.push({key:'Maghrib',title:'WAKTU BERBUKA PUASA',duration:120,minute:maghribMinute,priority:3});
+const active=messageEvents.filter(e=>{const elapsed=now-e.minute*60;return elapsed>=0&&elapsed<e.duration}).sort((a,b)=>b.priority-a.priority)[0];
+if(active){
+const selectedLabel=$('city').selectedOptions[0]?.dataset.label||'';
+const prefix=/^\\s*KABUPATEN\\b/i.test(selectedLabel)?'KABUPATEN':'KOTA';
+$('nextName').textContent=active.title;
+$('countdown').textContent=prefix+' '+city.toLocaleUpperCase('id-ID')+' DAN SEKITARNYA';
+$('countdown').classList.add('is-message-location');
+document.querySelectorAll('.prayer').forEach(el=>el.classList.toggle('active',el.dataset.key===active.key));
+return
+}
+$('countdown').classList.remove('is-message-location');
+const arr=prayers.filter(p=>!p.ramadanOnly||isRamadanActive).map(p=>({...p,m:mins(times[p.key])})).filter(p=>!p.notPrayer&&p.m>=0);
+let p=arr.find(x=>x.m*60>now),remaining,tomorrow=false;
+if(!p){p=arr[0];if(!p)return;remaining=86400-now+p.m*60;tomorrow=true}else remaining=p.m*60-now;
+$('nextName').textContent=p.name;
+$('countdown').textContent=[Math.floor(remaining/3600),Math.floor(remaining%3600/60),remaining%60].map(x=>String(x).padStart(2,'0')).join(':');
+document.querySelectorAll('.prayer').forEach(el=>el.classList.toggle('active',el.dataset.key===p.key&&!tomorrow))
+}
 function isRamadan(data){const h=data&&data.date&&data.date.hijri;return !!(h&&Number(h.month&&h.month.number)===9)}
 function render(data){times=data.timings;const h=data.date&&data.date.hijri;isRamadanActive=isRamadan(data);if(h){const i=Number(h.month.number)-1;hijriText=(h.day||'')+' '+(months[i]||h.month.en)+' '+(h.year||'')+' H'}dates();const shown=prayers.filter(p=>!p.ramadanOnly||isRamadanActive);$('list').innerHTML=shown.map(p=>'<div class="prayer" data-key="'+p.key+'"><div class="picon">'+p.icon+'</div><div><div class="pname">'+p.name+'</div><div class="pdesc">'+p.desc+'</div></div><div class="ptime">'+clean(times[p.key])+'</div></div>').join('');next()}
 async function loadPrayer(){const requestId=++loadRequestId;status('Mengambil jadwal dari AlAdhan…');try{const parts=zonedParts(),d=localDateForApi(parts),key=localDateKey(parts);lastLoadedLocalDate=key;const url='https://api.aladhan.com/v1/timingsByCity/'+d+'?city='+encodeURIComponent(city)+'&country=Indonesia&method=20';const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const j=await r.json();if(j.code!==200||!j.data?.timings)throw Error('Data tidak tersedia');if(requestId!==loadRequestId)return;render(j.data);$('locName').textContent=city+', '+provinceName+' · '+activeZoneLabel;status('Jadwal diperbarui · AlAdhan metode 20 · '+activeZoneLabel)}catch(e){if(requestId===loadRequestId){status('Gagal mengambil jadwal. Periksa koneksi lalu pilih kota kembali.',true);console.error(e)}}}
