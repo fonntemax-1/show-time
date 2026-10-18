@@ -110,6 +110,8 @@ else if(mode==='province')status('Provinsi ditemukan: '+results[0].province+' ·
 else if(mode==='provinceSuggestion')status('Saran provinsi terdekat berdasarkan nama: '+results[0].province+' · pilih kabupaten/kota dari saran.');
 else if(mode==='suggestion')status('Tidak ditemukan kecocokan persis. Pilih salah satu saran nama daerah yang mirip.');
 else if(mode==='district')status(results.length+' kecamatan ditemukan. Pilih kecamatan untuk memakai jadwal kabupaten/kota induknya.');
+else if(mode==='districtSuggestion')status('Nama persis belum ditemukan. Berikut kecamatan yang namanya paling mirip; pilih untuk memakai jadwal kabupaten/kota induknya.');
+else if(mode==='citySuggestion')status('Kecamatan belum cocok. Berikut kabupaten/kota dengan nama yang paling mendekati.');
 else if(mode==='noDistrict')status('Nama kota/kabupaten tidak cocok. Belum ditemukan kecamatan dengan nama tersebut.');
 else status(results.length+' hasil. Pilih salah satu saran untuk memuat jadwal sholat.');
 if(q.length>=3&&!cityMatches.length&&!provinceExact.length&&!provinceMatches.length&&!districtOptions.length){status('Mencari kecamatan di seluruh Indonesia untuk “'+query+'”… pencarian pertama bisa memerlukan waktu.');loadDistrictIndex().then(()=>{if(generation===searchGeneration)renderCityOptions(query)}).catch(err=>{console.warn('Indeks kecamatan gagal dimuat',err);if(generation===searchGeneration)status('Pencarian kecamatan gagal dimuat. Periksa koneksi internet.',true)})}
