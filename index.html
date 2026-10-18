@@ -65,9 +65,9 @@ const maghribMinute=mins(times.Maghrib);
 if(isRamadanActive&&maghribMinute>=0)messageEvents.push({key:'Maghrib',title:'WAKTU BERBUKA PUASA',duration:180,minute:maghribMinute,priority:3});
 const active=messageEvents.filter(e=>{const elapsed=now-e.minute*60;return elapsed>=0&&elapsed<e.duration}).sort((a,b)=>b.priority-a.priority)[0];
 if(active){
-const prefix=/^\s*KABUPATEN\b/i.test(cityLabel)?'KABUPATEN':'KOTA';
 $('nextName').textContent=active.title;
-$('countdown').textContent=prefix+' '+city.toLocaleUpperCase('id-ID')+' DAN SEKITARNYA';
+const areaText=(districtName?districtName+', ':'')+city+' DAN SEKITARNYA';
+$('countdown').textContent=areaText.toLocaleUpperCase('id-ID');
 $('countdown').classList.add('is-message-location');
 document.querySelectorAll('.prayer').forEach(el=>el.classList.toggle('active',el.dataset.key===active.key));
 return
