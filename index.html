@@ -61,7 +61,7 @@ if(isRamadanActive&&imsakMinute>=0)messageEvents.push({key:'Imsak',title:'WAKTU 
 const prayerMessages=[{key:'Fajr',name:'SUBUH'},{key:'Dhuhr',name:'ZUHUR'},{key:'Asr',name:'ASAR'},{key:'Maghrib',name:'MAGRIB'},{key:'Isha',name:'ISYA'}];
 for(const p of prayerMessages){const minute=mins(times[p.key]);if(minute>=0)messageEvents.push({key:p.key,title:'WAKTU SHOLAT '+p.name,duration:900,minute,priority:1})}
 const maghribMinute=mins(times.Maghrib);
-if(isRamadanActive&&maghribMinute>=0)messageEvents.push({key:'Maghrib',title:'WAKTU BERBUKA PUASA',duration:120,minute:maghribMinute,priority:3});
+if(isRamadanActive&&maghribMinute>=0)messageEvents.push({key:'Maghrib',title:'WAKTU BERBUKA PUASA',duration:180,minute:maghribMinute,priority:3});
 const active=messageEvents.filter(e=>{const elapsed=now-e.minute*60;return elapsed>=0&&elapsed<e.duration}).sort((a,b)=>b.priority-a.priority)[0];
 if(active){
 const selectedLabel=$('city').selectedOptions[0]?.dataset.label||'';
