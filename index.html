@@ -211,7 +211,7 @@ function prayerSequence(key,ramadan){
 if(key==='Fajr'&&ramadan)return [{file:'qiroah.mp3'},{gap:2},{file:'sirine.mp3'},{gap:2},{file:'doa-puasa.mp3'},{gap:2},{file:'tarhim.mp3'},{gap:2},{file:'beep.mp3'},{gap:2},{file:'adzan-subuh.mp3',adhan:true},{gap:2},{file:'doa.mp3'}];
 if(key==='Fajr')return [{file:'qiroah.mp3'},{gap:1},{file:'tarhim.mp3'},{gap:1},{file:'beep.mp3'},{gap:1},{file:'adzan-subuh.mp3',adhan:true},{file:'doa.mp3'}];
 if(key==='Dhuhr')return [{file:'qiroah.mp3'},{gap:1},{file:'tarhim.mp3'},{gap:1},{file:'beep.mp3'},{gap:1},{file:'adzan-biasa.mp3',adhan:true},{file:'doa.mp3'}];
-if(key==='Maghrib'&&ramadan)return [{file:'qiroah.mp3'},{gap:2},{file:'sirine.mp3'},{gap:2},{file:'doa-buka.mp3'},{gap:Math.max(0.1,180-(Number(prayerAudio.get('beep.mp3')?.duration)||0)-2)},{file:'beep.mp3'},{gap:2},{file:'adzan-biasa.mp3',adhan:true},{gap:2},{file:'doa.mp3'}];
+if(key==='Maghrib'&&ramadan)return [{file:'qiroah.mp3'},{gap:2},{file:'sirine.mp3'},{gap:2},{file:'doa-buka.mp3'},{gap:2},{file:'beep.mp3'},{gap:2},{gap:Math.max(0.1,180-(Number(prayerAudio.get('beep.mp3')?.duration)||0)-2)},{file:'adzan-biasa.mp3',adhan:true},{gap:2},{file:'doa.mp3'}];
 return [{file:'qiroah.mp3'},{gap:1},{file:'tarhim.mp3'},{gap:1},{file:'beep.mp3'},{gap:1},{file:'adzan-biasa.mp3',adhan:true},{file:'doa.mp3'}];
 }
 async function sequenceDurations(sequence){
