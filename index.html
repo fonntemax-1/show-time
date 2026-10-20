@@ -68,6 +68,9 @@ header .header-date{margin-left:auto;flex-shrink:0}header .header-info{margin-le
  .audio-toggle{width:28px;height:30px;justify-self:end}
 }
 
+
+/* The location section is reserved for the automatic popup, not a permanent bottom bar. */
+.location:not(.location-picker-open){display:none!important}
 </style></head>
 <body><div class="page">
 <header><div class="brand weather-box" id="weatherBox" aria-label="Informasi cuaca wilayah"><span class="weather-icon" id="weatherIcon" aria-hidden="true">🌤️</span><div class="weather-details"><div class="weather-place" id="weatherPlace">Cuaca wilayah terpilih</div><div class="weather-current"><strong id="weatherTemp">--°C</strong><span id="weatherCondition">Memuat cuaca…</span></div></div></div><div class="header-info"><div class="header-clock" id="headerClock" aria-label="Jam sekarang">--:--:--</div><div class="header-calendar"><div id="headerGregorian">Memuat tanggal…</div><div id="headerHijri">Kalender Hijriah</div></div></div></header>
