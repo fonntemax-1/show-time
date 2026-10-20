@@ -278,7 +278,7 @@ if(finished)return;
 clearTimeout(stepTimer);clearTimeout(adhanTimer);stopCurrent();
 if(key==='Dhuhr')console.info('Target adzan Dzuhur:',new Date(adhanTarget).toLocaleTimeString());
 else console.info('Target waktu adzan:',key,new Date(adhanTarget).toLocaleTimeString());
-playMedia(adhanAudio,()=>{const doa=prayerAudio.get('doa.mp3');if(!doa){finish();return}stepTimer=setTimeout(()=>playMedia(doa,finish,'doa.mp3'),1000)},adhanStep.file,0,key==='Dhuhr'?(actualStartMs)=>{const targetText=new Date(adhanTarget).toLocaleTimeString();const actualText=new Date(actualStartMs).toLocaleTimeString();const deltaMs=actualStartMs-adhanTarget;console.info('Adzan Dzuhur mulai aktual:',actualText,'| target:',targetText,'| selisih:',(deltaMs>=0?'+':'')+(deltaMs/1000).toFixed(2)+' detik')} : null);
+playMedia(adhanAudio,()=>{const doa=prayerAudio.get('doa.mp3');if(!doa){finish();return}const afterAdhanGap=sequence[adhanIndex+1]?.gap?sequence[adhanIndex+1].gap*1000:1000;stepTimer=setTimeout(()=>playMedia(doa,finish,'doa.mp3'),afterAdhanGap)},adhanStep.file,0,key==='Dhuhr'?(actualStartMs)=>{const targetText=new Date(adhanTarget).toLocaleTimeString();const actualText=new Date(actualStartMs).toLocaleTimeString();const deltaMs=actualStartMs-adhanTarget;console.info('Adzan Dzuhur mulai aktual:',actualText,'| target:',targetText,'| selisih:',(deltaMs>=0?'+':'')+(deltaMs/1000).toFixed(2)+' detik')} : null);
 };
 const playPrelude=(index,offsetSeconds=0)=>{
 if(finished)return;if(!isPrayerAudioEnabled(key)){stopCurrent();finish();return}
