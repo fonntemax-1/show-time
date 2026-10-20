@@ -40,7 +40,11 @@ function toWmoCode(weatherId, clouds) {
 export default {
   async fetch(request, env) {
     const requestOrigin = request.headers.get("Origin") || "";
-    const allowed = requestOrigin === ALLOWED_ORIGIN;
+    // Browsers on the GitHub Pages site send the allowed Origin. Direct
+    // navigation/testing often sends no Origin at all, which is safe to
+    // permit here because Origin is a CORS signal, not authentication.
+    const allowed = !requestOrigin || requestOrigin === ALLOWED_ORIGIN;
+    const responseOrigin = requestOrigin || ALLOWED_ORIGIN;
     if (request.method === "OPTIONS") {
       if (!allowed) return new Response(null, { status: 403 });
       return new Response(null, {
