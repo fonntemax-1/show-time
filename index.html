@@ -60,6 +60,14 @@ header .header-date{margin-left:auto;flex-shrink:0}header .header-info{margin-le
  .location-picker-open{padding:14px!important}
  .location-picker-open .location-picker-card{padding:18px;border-radius:10px;gap:15px}
 }
+
+/* Mobile: keep each audio bell aligned to the right of its prayer time. */
+@media(max-width:480px){
+ .prayer{grid-template-columns:28px minmax(0,1fr) auto 28px;gap:6px}
+ .ptime{font-size:clamp(18px,5.2vw,21px);width:5.2ch;min-width:5.2ch}
+ .audio-toggle{width:28px;height:30px;justify-self:end}
+}
+
 </style></head>
 <body><div class="page">
 <header><div class="brand weather-box" id="weatherBox" aria-label="Informasi cuaca wilayah"><span class="weather-icon" id="weatherIcon" aria-hidden="true">🌤️</span><div class="weather-details"><div class="weather-place" id="weatherPlace">Cuaca wilayah terpilih</div><div class="weather-current"><strong id="weatherTemp">--°C</strong><span id="weatherCondition">Memuat cuaca…</span></div></div></div><div class="header-info"><div class="header-clock" id="headerClock" aria-label="Jam sekarang">--:--:--</div><div class="header-calendar"><div id="headerGregorian">Memuat tanggal…</div><div id="headerHijri">Kalender Hijriah</div></div></div></header>
