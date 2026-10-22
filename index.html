@@ -349,12 +349,21 @@ if(!baseDur.valid||!baseDur.untilAdhan)continue;
 const preSirine=sequence.slice(0,sirineIndex).reduce((sum,step)=>sum+(step.gap?step.gap*1000:(Number(prayerAudio.get(step.file)?.duration)||0)*1000),0);
 if(!Number.isFinite(preSirine)||preSirine<=0){console.warn('Jadwal Subuh Ramadan ditahan: durasi sebelum sirine tidak tersedia.',{preSirineSeconds:preSirine/1000});continue}
 const desiredDuration=(fajrToday-imsakToday)+preSirine;
-const extraGap=desiredDuration-baseDur.untilAdhan;
+let extraGap=desiredDuration-baseDur.untilAdhan;
 if(extraGap<0){console.warn('Audio Subuh Ramadan terlalu panjang untuk menjamin sirine tepat pada IMSAK dan adzan tepat pada SUBUH; durasi melebihi jendela IMSAK–SUBUH.',{extraGapSeconds:Math.round(extraGap/1000)});continue}
 let gapIndex=-1;for(let i=beepIndex-1;i>sirineIndex;i--){if(sequence[i].gap){gapIndex=i;break}}
 if(gapIndex<0){console.warn('Jadwal Subuh Ramadan ditahan: jeda penyesuaian sebelum beep tidak ditemukan.');continue}
+/* Isi waktu tunggu dengan pengulangan tarhim, bukan diam panjang. Setiap putaran menyisakan jeda 2 detik; sisa waktu yang lebih pendek dari satu putaran tetap menjadi jeda penyesuaian. */
+const tarhimSeconds=Number(prayerAudio.get('tarhim.mp3')?.duration)||0;
+const tarhimCycleMs=tarhimSeconds*1000+2000;
+let tarhimLoops=0;
+if(tarhimCycleMs>0&&extraGap>=tarhimCycleMs){
+tarhimLoops=Math.floor(extraGap/tarhimCycleMs);
+const beepAt=sequence.findIndex((step,index)=>index>sirineIndex&&step.file==='beep.mp3');
+if(beepAt>=0){const loopSteps=[];for(let n=0;n<tarhimLoops;n++)loopSteps.push({file:'tarhim.mp3'},{gap:2});sequence.splice(beepAt,0,...loopSteps);extraGap-=tarhimLoops*tarhimCycleMs}
+}
 sequence=sequence.map((step,i)=>i===gapIndex?{gap:step.gap+extraGap/1000}:step);
-console.info('Anchor Subuh Ramadan: sirine dijadwalkan tepat pada IMSAK, adzan tepat pada SUBUH.',{imsak:new Date(imsakToday).toLocaleTimeString(),subuh:new Date(fajrToday).toLocaleTimeString(),sirineOffsetFromStartSeconds:preSirine/1000,extraWaitBeforeBeepSeconds:Math.round(extraGap/1000)});
+console.info('Anchor Subuh Ramadan: sirine dijadwalkan tepat pada IMSAK, adzan tepat pada SUBUH; tarhim diulang untuk mengisi waktu tunggu.',{imsak:new Date(imsakToday).toLocaleTimeString(),subuh:new Date(fajrToday).toLocaleTimeString(),sirineOffsetFromStartSeconds:preSirine/1000,tarhimLoops,remainingWaitBeforeBeepSeconds:Math.round(extraGap/1000)});
 }
 const dur=await sequenceDurations(sequence);
 if(audioPlanContext!==context||!times)return;
