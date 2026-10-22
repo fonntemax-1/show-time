@@ -284,7 +284,10 @@ const playPrelude=(index,offsetSeconds=0)=>{
 if(finished)return;if(!isPrayerAudioEnabled(key)){stopCurrent();finish();return}
 if(index>=adhanIndex){startAdhan();return}
 const step=sequence[index];
-if(step.gap){const gapMs=step.gap*1000;const elapsed=Math.max(0,offsetSeconds*1000);const remaining=Math.max(0,gapMs-elapsed);if(remaining===0){playPrelude(index+1,0);return}stepTimer=setTimeout(()=>playPrelude(index+1,0),remaining);return}
+if(step.gap){const gapMs=step.gap*1000;const elapsed=Math.max(0,offsetSeconds*1000);const remaining=Math.max(0,gapMs-elapsed);if(remaining===0){playPrelude(index+1,0);return}
+if(step.loopFile){const loopAudio=prayerAudio.get(step.loopFile);if(!loopAudio){console.warn('Audio loop tidak ditemukan:',step.loopFile);stepTimer=setTimeout(()=>playPrelude(index+1,0),remaining);return}
+let loopStopped=false;const loopEnded=()=>{if(loopStopped||finished)return;try{loopAudio.currentTime=0;const p=loopAudio.play();if(p&&p.catch)p.catch(e=>{console.warn('Tarhim loop gagal dilanjutkan:',e);stopLoop()})}catch(e){console.warn('Tarhim loop gagal dilanjutkan:',e);stopLoop()}};const stopLoop=()=>{if(loopStopped)return;loopStopped=true;clearTimeout(stepTimer);loopAudio.removeEventListener('ended',loopEnded);if(currentCleanup===stopLoop)currentCleanup=null;try{loopAudio.pause();loopAudio.currentTime=0}catch(e){}currentAudio=null};currentAudio=loopAudio;currentCleanup=stopLoop;loopAudio.addEventListener('ended',loopEnded);try{loopAudio.pause();loopAudio.currentTime=0;const p=loopAudio.play();if(p&&p.catch)p.catch(e=>{console.warn('Tarhim loop tidak dapat dimulai:',e);stopLoop()})}catch(e){console.warn('Tarhim loop tidak dapat dimulai:',e);stopLoop()}stepTimer=setTimeout(()=>{stopLoop();playPrelude(index+1,0)},remaining);return}
+stepTimer=setTimeout(()=>playPrelude(index+1,0),remaining);return}
 const audio=prayerAudio.get(step.file);
 if(!audio){console.warn('Berkas audio tidak ditemukan; melewati tahap:',step.file);playPrelude(index+1,0);return}
 if(step.file==='beep.mp3')beepStarted=true;
@@ -362,8 +365,8 @@ tarhimLoops=Math.floor(extraGap/tarhimCycleMs);
 const beepAt=sequence.findIndex((step,index)=>index>sirineIndex&&step.file==='beep.mp3');
 if(beepAt>=0){const loopSteps=[];for(let n=0;n<tarhimLoops;n++)loopSteps.push({file:'tarhim.mp3'},{gap:2});sequence.splice(beepAt,0,...loopSteps);extraGap-=tarhimLoops*tarhimCycleMs}
 }
-sequence=sequence.map((step,i)=>i===gapIndex?{gap:step.gap+extraGap/1000}:step);
-console.info('Anchor Subuh Ramadan: sirine dijadwalkan tepat pada IMSAK, adzan tepat pada SUBUH; tarhim diulang untuk mengisi waktu tunggu.',{imsak:new Date(imsakToday).toLocaleTimeString(),subuh:new Date(fajrToday).toLocaleTimeString(),sirineOffsetFromStartSeconds:preSirine/1000,tarhimLoops,remainingWaitBeforeBeepSeconds:Math.round(extraGap/1000)});
+sequence=sequence.map((step,i)=>i===gapIndex?{gap:step.gap+extraGap/1000,loopFile:extraGap>0?'tarhim.mp3':undefined}:step);
+console.info('Anchor Subuh Ramadan: sirine dijadwalkan tepat pada IMSAK, adzan tepat pada SUBUH; tarhim mengisi sisa waktu sebelum beep.',{imsak:new Date(imsakToday).toLocaleTimeString(),subuh:new Date(fajrToday).toLocaleTimeString(),sirineOffsetFromStartSeconds:preSirine/1000,tarhimLoops,remainingWaitBeforeBeepSeconds:Math.round(extraGap/1000)});
 }
 const dur=await sequenceDurations(sequence);
 if(audioPlanContext!==context||!times)return;
