@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  const MODE_SHOLAT = 'ramadan';
+  const MODE_SHOLAT = 'auto';
 
   function isRamadan(data) {
     if (MODE_SHOLAT === 'ramadan') return true;
