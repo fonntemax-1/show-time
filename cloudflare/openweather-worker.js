@@ -75,7 +75,14 @@ export default {
     cacheUrl.searchParams.set("lon", lon.toFixed(3));
     const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
     const cache = caches.default;
-    const cached = await cache.match(cacheKey);
+    // A cache read failure must not escape as an unhandled Worker 500 without
+    // CORS headers. Treat the cache as unavailable and continue to OpenWeather.
+    let cached = null;
+    try {
+      cached = await cache.match(cacheKey);
+    } catch (error) {
+      console.warn("Weather cache read failed; requesting OpenWeather directly.", error);
+    }
     if (cached) {
       const headers = new Headers(cached.headers);
       headers.set("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
