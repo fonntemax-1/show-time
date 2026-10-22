@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  const MODE_SHOLAT = 'ramadan';
+  const MODE_SHOLAT = ramadan;
 
   function readTestMode() {
     try {
