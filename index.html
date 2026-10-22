@@ -157,7 +157,7 @@ $('countdown').classList.remove('is-message-location');
 const arr=prayers.filter(p=>(!p.ramadanOnly||isRamadanActive)&&!(isRamadanActive&&p.key==='Sunrise')).map(p=>({...p,m:mins(times[p.key])})).filter(p=>!p.notPrayer&&p.m>=0);
 let p=arr.find(x=>x.m*60>now),remaining,tomorrow=false;
 if(!p){p=arr[0];if(!p)return;remaining=86400-now+p.m*60;tomorrow=true}else remaining=p.m*60-now;
-$('nextName').textContent=p.name;
+$('nextName').textContent=p.key==='Dhuhr'&&isFridayLocal()?"SHOLAT JUM'AT":p.name;
 $('countdown').textContent=[Math.floor(remaining/3600),Math.floor(remaining%3600/60),remaining%60].map(x=>String(x).padStart(2,'0')).join(':');
 document.querySelectorAll('.prayer').forEach(el=>el.classList.toggle('active',el.dataset.key===p.key&&!tomorrow))
 }
