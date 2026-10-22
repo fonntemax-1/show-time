@@ -203,8 +203,8 @@ const prayerAudioFiles=['qiroah.mp3','tarhim.mp3','sirine.mp3','doa-buka.mp3','d
 const prayerAudio=new Map(),audioReady=new Map(),audioScheduled=new Set();
 let audioUnlocked=false,audioSequenceRunning=false,audioScheduling=false,audioPlanContext='',audioScheduledTimers=[],activeSequenceControl=null,audioLocationGeneration=0;
 function resetAudioForLocationChange(){audioLocationGeneration++;if(activeSequenceControl)activeSequenceControl.stop();for(const timer of audioScheduledTimers)clearTimeout(timer);audioScheduledTimers=[];audioScheduled.clear();audioPlanContext='';times=null;console.info('Lokasi berubah: rangkaian audio lama dihentikan dan jadwal lama dibatalkan.')} const audioRoot=new URL('./audio/',location.href);
-for(const file of prayerAudioFiles){const a=new Audio();a.preload='auto';a.src=new URL(file,audioRoot).href;a.load();prayerAudio.set(file,a)}
-function loadAudioMetadata(file){if(audioReady.has(file))return audioReady.get(file);const a=prayerAudio.get(file);if(!a)return Promise.resolve(0);const ready=new Promise(resolve=>{let settled=false,watchdog=null,finalCheck=null;const cleanup=()=>{if(watchdog)clearTimeout(watchdog);if(finalCheck)clearTimeout(finalCheck);a.removeEventListener('loadedmetadata',done);a.removeEventListener('durationchange',done);a.removeEventListener('error',fail)};const done=()=>{if(settled)return;const duration=Number(a.duration);if(Number.isFinite(duration)&&duration>0){settled=true;cleanup();console.info('Metadata audio berhasil:',file,duration);resolve(duration)}};const fail=()=>{if(settled)return;settled=true;cleanup();console.warn('Gagal membaca metadata audio:',file,{src:a.currentSrc||a.src,errorCode:a.error?.code,readyState:a.readyState,networkState:a.networkState});resolve(0)};a.addEventListener('loadedmetadata',done);a.addEventListener('durationchange',done);a.addEventListener('error',fail,{once:true});a.preload=/^(adzan-subuh|adzan-biasa)\.mp3$/i.test(file)?'auto':'metadata';watchdog=setTimeout(()=>{done();if(settled)return;console.warn('Metadata audio masih dimuat setelah 60 detik:',file,{src:a.currentSrc||a.src,readyState:a.readyState,networkState:a.networkState,duration:a.duration});finalCheck=setTimeout(()=>{done();if(settled)return;settled=true;cleanup();console.warn('Metadata audio belum tersedia setelah 120 detik:',file,{src:a.currentSrc||a.src,errorCode:a.error?.code,readyState:a.readyState,networkState:a.networkState,duration:a.duration});resolve(0)},60000)},60000);a.load()});audioReady.set(file,ready);return ready;}
+for(const file of prayerAudioFiles){const a=new Audio();a.preload='metadata';a.src=new URL(file,audioRoot).href;a.load();prayerAudio.set(file,a)}
+function loadAudioMetadata(file){if(audioReady.has(file))return audioReady.get(file);const a=prayerAudio.get(file);if(!a)return Promise.resolve(0);const ready=new Promise(resolve=>{let settled=false,watchdog=null,finalCheck=null;const cleanup=()=>{if(watchdog)clearTimeout(watchdog);if(finalCheck)clearTimeout(finalCheck);a.removeEventListener('loadedmetadata',done);a.removeEventListener('durationchange',done);a.removeEventListener('error',fail)};const done=()=>{if(settled)return;const duration=Number(a.duration);if(Number.isFinite(duration)&&duration>0){settled=true;cleanup();console.info('Metadata audio berhasil:',file,duration);resolve(duration)}};const fail=()=>{if(settled)return;settled=true;cleanup();console.warn('Gagal membaca metadata audio:',file,{src:a.currentSrc||a.src,errorCode:a.error?.code,readyState:a.readyState,networkState:a.networkState});resolve(0)};a.addEventListener('loadedmetadata',done);a.addEventListener('durationchange',done);a.addEventListener('error',fail,{once:true});a.preload='metadata';watchdog=setTimeout(()=>{done();if(settled)return;console.warn('Metadata audio masih dimuat setelah 60 detik:',file,{src:a.currentSrc||a.src,readyState:a.readyState,networkState:a.networkState,duration:a.duration});finalCheck=setTimeout(()=>{done();if(settled)return;settled=true;cleanup();console.warn('Metadata audio belum tersedia setelah 120 detik:',file,{src:a.currentSrc||a.src,errorCode:a.error?.code,readyState:a.readyState,networkState:a.networkState,duration:a.duration});resolve(0)},60000)},60000);a.load()});audioReady.set(file,ready);return ready;}
 async function unlockPrayerAudio(){const test=prayerAudio.get('beep.mp3');try{if(!test)throw Error('Berkas beep.mp3 tidak tersedia');test.muted=true;test.volume=0;test.currentTime=0;await test.play();test.pause();test.currentTime=0;test.muted=false;test.volume=1;audioUnlocked=true;if($('status'))status('Audio sistem siap. Ikon bel mengatur audio setiap waktu sholat.');schedulePrayerAudio().catch(e=>console.error('Penjadwalan audio gagal setelah aktivasi',e))}catch(e){audioUnlocked=false;if(test){test.muted=false;test.volume=1}if($('status'))status('Browser belum mengizinkan audio. Ketuk ikon bel lagi untuk mencoba kembali.',true);console.error('Aktivasi audio gagal:',e)}}
 $('list').addEventListener('click',async e=>{const button=e.target.closest('.audio-toggle');if(!button)return;const key=button.dataset.key;if(!audioPrayerKeys.has(key))return;if(!audioUnlocked&&isPrayerAudioEnabled(key)){await unlockPrayerAudio();return}const enabled=!isPrayerAudioEnabled(key);prayerAudioEnabled[key]=enabled;document.querySelectorAll('.audio-toggle[data-key="'+key+'"]').forEach(el=>{el.classList.toggle('is-on',enabled);el.classList.toggle('is-off',!enabled);el.setAttribute('aria-pressed',String(enabled));el.setAttribute('aria-label',(prayers.find(p=>p.key===key)?.name||key)+' audio '+(enabled?'aktif':'nonaktif'));el.title='Audio '+(prayers.find(p=>p.key===key)?.name||key)+' '+(enabled?'aktif':'nonaktif');el.innerHTML=enabled?bellOnSvg:bellOffSvg});if(!enabled&&activeSequenceControl?.key===key)activeSequenceControl.stop();for(const timer of audioScheduledTimers)clearTimeout(timer);audioScheduledTimers=[];audioScheduled.clear();audioPlanContext='';if(!audioUnlocked)await unlockPrayerAudio();else schedulePrayerAudio().catch(err=>console.error('Penjadwalan audio gagal setelah perubahan bel',err));if($('status')&&(!enabled||audioUnlocked))status('Audio '+(prayers.find(p=>p.key===key)?.name||key)+' '+(enabled?'aktif':'nonaktif')+'. Jadwal azan tidak berubah.')});
 function prayerSequence(key,ramadan){
@@ -215,20 +215,23 @@ if(key==='Maghrib'&&ramadan)return [{file:'qiroah.mp3'},{file:'tarhim.mp3'},{gap
 return [{file:'qiroah.mp3'},{gap:1},{file:'tarhim.mp3'},{gap:1},{file:'beep.mp3'},{gap:1},{file:'adzan-biasa.mp3',adhan:true},{file:'doa.mp3'}];
 }
 async function sequenceDurations(sequence){
-let total=0,untilAdhan=0,adhanFound=false;
-for(let i=0;i<sequence.length;i++){
+const adhanIndex=sequence.findIndex(step=>step.adhan);
+if(adhanIndex<0){console.warn('Sequence tidak memiliki tahap adzan; timeline tidak dapat dihitung.');return {total:0,untilAdhan:0,valid:false}}
+const needed=sequence.slice(0,adhanIndex+1).filter(step=>!step.gap);
+const loaded=await Promise.all(needed.map(async step=>({file:step.file,duration:Number(await loadAudioMetadata(step.file))})));
+const durationByFile=new Map(loaded.map(item=>[item.file,item.duration]));
+let total=0,untilAdhan=0;
+for(let i=0;i<=adhanIndex;i++){
 const step=sequence[i];
-if(step.adhan){const adhanDuration=Number(await loadAudioMetadata(step.file));if(!Number.isFinite(adhanDuration)||adhanDuration<=0){console.warn('Durasi audio adzan nyata belum tersedia:',step.file);return {total:0,untilAdhan:0,valid:false,missingFile:step.file}}adhanFound=true;break;}
-if(step.gap){const gapMs=step.gap*1000;total+=gapMs;untilAdhan+=gapMs;continue;}
-const rawDuration=Number(await loadAudioMetadata(step.file));
+if(step.gap){const gapMs=step.gap*1000;total+=gapMs;untilAdhan+=gapMs;continue}
+const rawDuration=durationByFile.get(step.file);
 if(!Number.isFinite(rawDuration)||rawDuration<=0){
 console.warn('Durasi audio nyata belum tersedia; penjadwalan ditahan agar adzan tidak meleset:',step.file);
-return {total:0,untilAdhan:0,valid:false,missingFile:step.file};
+return {total:0,untilAdhan:0,valid:false,missingFile:step.file}
 }
-const durationMs=rawDuration*1000;
-total+=durationMs;untilAdhan+=durationMs;
+const durationMs=rawDuration*1000;total+=durationMs;
+if(i<adhanIndex)untilAdhan+=durationMs;
 }
-if(!adhanFound){console.warn('Sequence tidak memiliki tahap adzan; timeline tidak dapat dihitung.');return {total:0,untilAdhan:0,valid:false};}
 return {total,untilAdhan,valid:true};
 }
 function localClockTarget(prayerMinute,now=new Date()){const p=zonedParts(now),current=p.hour*3600+p.minute*60+p.second;let delta=prayerMinute*60-current;if(delta<0)delta+=86400;return now.getTime()+delta*1000}
