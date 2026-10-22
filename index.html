@@ -342,7 +342,7 @@ const fajrToday=localClockTargetIncludingPast(mins(times.Fajr));
 const imsakToday=localClockTargetIncludingPast(mins(times.Imsak));
 const sirineIndex=sequence.findIndex(step=>step.file==='sirine.mp3');
 const beepIndex=sequence.findIndex(step=>step.file==='beep.mp3');
-if(imsakToday<0||sirineIndex<0||beepIndex<0){console.warn('Jadwal Subuh Ramadan ditahan: waktu IMSAK atau tahap sirine/beep tidak tersedia.');continue}
+if(mins(times.Imsak)<0||mins(times.Fajr)<0||sirineIndex<0||beepIndex<0){console.warn('Jadwal Subuh Ramadan ditahan: waktu IMSAK/SUBUH atau tahap sirine/beep tidak tersedia.');continue}
 const preSirine=sequence.slice(0,sirineIndex).reduce((sum,step)=>sum+(step.gap?step.gap*1000:(Number(prayerAudio.get(step.file)?.duration)||0)*1000),0);
 const baseDur=await sequenceDurations(sequence);
 if(!baseDur.valid||!baseDur.untilAdhan)continue;
