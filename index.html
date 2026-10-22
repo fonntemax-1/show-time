@@ -309,15 +309,16 @@ clearTimeout(stepTimer);stopCurrent();
 if(key==='Dhuhr')console.info('Target adzan Dzuhur:',new Date(adhanTarget).toLocaleTimeString());else console.info('Target waktu adzan:',key,new Date(adhanTarget).toLocaleTimeString());
 playMedia(adhanAudio,()=>{const doa=prayerAudio.get('doa.mp3');if(!doa){finish();return}stepTimer=setTimeout(()=>playMedia(doa,finish,'doa.mp3'),1000)},adhanStep.file,0,key==='Dhuhr'?(actualStartMs)=>{const targetText=new Date(adhanTarget).toLocaleTimeString();const actualText=new Date(actualStartMs).toLocaleTimeString();const deltaMs=actualStartMs-adhanTarget;console.info('Adzan Dzuhur mulai aktual:',actualText,'| target:',targetText,'| selisih:',(deltaMs>=0?'+':'')+(deltaMs/1000).toFixed(2)+' detik')} : null);
 };
-/* Jangkar khusus Subuh Ramadan: sirine harus mulai tepat pada IMSAK. Jika audio sebelumnya terlambat dimuat/dimulai, hentikan tahap yang masih berjalan saat jangkar tercapai lalu mulai sirine; ini mencegah sirine ikut bergeser karena buffering browser. */
-if(key==='Fajr'&&isRamadanActive){
+/* Jangkar sirine Ramadan: Subuh tepat pada IMSAK dan Maghrib tepat pada waktu berbuka. Jika tahap sebelumnya tertahan/buffering, hentikan tahap yang menghalangi saat anchor tercapai. */
+if((key==='Fajr'||key==='Maghrib')&&isRamadanActive){
 const sirineIndex=sequence.findIndex(step=>step.file==='sirine.mp3');
 if(sirineIndex>=0){
 const preSirineMs=sequence.slice(0,sirineIndex).reduce((sum,step)=>sum+(step.gap?step.gap*1000:(Number(prayerAudio.get(step.file)?.duration)||0)*1000),0);
 const sirineTarget=plannedStart+preSirineMs;
+const anchorName=key==='Fajr'?'IMSAK':'MAGHRIB';
 imsakSirineTimer=setTimeout(()=>{
 if(finished||activeStageIndex>sirineIndex||(activeStageIndex===sirineIndex&&currentAudio===prayerAudio.get('sirine.mp3')&&Number(currentAudio.currentTime)>0.15))return;
-console.warn('Jangkar IMSAK tercapai sebelum sirine mulai; tahap yang menghalangi dihentikan agar sirine mulai pada waktunya.',{target:new Date(sirineTarget).toLocaleTimeString(),actual:new Date().toLocaleTimeString(),stage:sequence[activeStageIndex]?.file||'jeda'});
+console.warn('Jangkar '+anchorName+' tercapai sebelum sirine mulai; tahap yang menghalangi dihentikan agar sirine mulai pada waktunya.',{target:new Date(sirineTarget).toLocaleTimeString(),actual:new Date().toLocaleTimeString(),stage:sequence[activeStageIndex]?.file||'jeda'});
 clearTimeout(stepTimer);stopCurrent();playPrelude(sirineIndex,0);
 },Math.max(0,sirineTarget-Date.now()));
 }
