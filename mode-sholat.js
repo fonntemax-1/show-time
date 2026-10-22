@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  const MODE_SHOLAT = 'auto';
+  const MODE_SHOLAT = 'ramadan';
 
   function isRamadan(data) {
     const testMode = new URLSearchParams(window.location.search).get('ujiRamadan');
