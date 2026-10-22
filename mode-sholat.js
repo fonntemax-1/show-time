@@ -24,7 +24,7 @@
     const testMode = readTestMode();
 
     if (testMode !== null) {
-      const result = testMode === '0';
+      const result = testMode === '1';
       console.info('[ShowTimeMode] Mode pengujian aktif:', result ? 'RAMADAN' : 'BIASA');
       return result;
     }
