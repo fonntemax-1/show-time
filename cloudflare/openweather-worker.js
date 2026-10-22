@@ -39,7 +39,8 @@ function toWmoCode(weatherId, clouds) {
 
 export default {
   async fetch(request, env) {
-    const requestOrigin = request.headers.get("Origin") || "";
+    try {
+      const requestOrigin = request.headers.get("Origin") || "";
     // Browsers on the GitHub Pages site send the allowed Origin. Direct
     // navigation/testing often sends no Origin at all, which is safe to
     // permit here because Origin is a CORS signal, not authentication.
@@ -130,6 +131,10 @@ export default {
       return response;
     } catch {
       return json({ error: "Unable to contact OpenWeather" }, 502);
+    }
+    } catch (error) {
+      console.error("Unhandled weather Worker error:", error);
+      return json({ error: "Internal weather Worker error" }, 500, ALLOWED_ORIGIN);
     }
   }
 };
