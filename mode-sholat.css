@@ -1,0 +1,18 @@
+/* Tampilan berdasarkan mode yang dipilih JavaScript dari ?ujiRamadan=1 atau ?ujiRamadan=0.
+   File ini hanya mengatur gaya; jadwal dan rangkaian audio tetap ditangani index.html. */
+:root[data-sholat-mode="ramadan"] {
+  --mode-accent: #a47a32;
+  --mode-line: #e5d3a9;
+}
+:root[data-sholat-mode="biasa"] {
+  --mode-accent: var(--gold);
+  --mode-line: var(--line);
+}
+[data-sholat-mode] .tablehead .tag {
+  border-color: var(--mode-line);
+  color: var(--mode-accent);
+}
+[data-sholat-mode="ramadan"] .prayer[data-key="Imsak"] .picon {
+  border-color: var(--mode-line);
+  color: var(--mode-accent);
+}
