@@ -235,6 +235,43 @@ header .header-date{margin-left:auto;flex-shrink:0}header .header-info{margin-le
   .foot { font-size:8px; }
 }
 
+
+/* TV/desktop: pastikan keenam baris jadwal muat; bila viewport sangat pendek,
+   area daftar tetap bisa digulir tanpa memotong isi panel. */
+@media screen and (min-width:801px) {
+  .right {
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    overflow:hidden;
+  }
+  .right .tablehead { flex:0 0 auto; margin-bottom:clamp(2px,0.35vh,5px); }
+  .right #list {
+    flex:1 1 auto;
+    min-height:0;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    scrollbar-width:thin;
+  }
+  .right .prayer {
+    padding-top:clamp(2px,0.45vh,5px);
+    padding-bottom:clamp(2px,0.45vh,5px);
+    gap:clamp(4px,0.55vw,8px);
+  }
+  .right .picon { width:clamp(20px,1.7vw,28px); height:clamp(20px,1.7vw,28px); }
+  .right .ptime { font-size:clamp(17px,1.55vw,22px); }
+  .right .pname { font-size:clamp(10px,0.85vw,12px); line-height:1.15; }
+  .right .pdesc { font-size:clamp(8px,0.7vw,10px); line-height:1.15; margin-top:1px; }
+  .right .foot { flex:0 0 auto; margin-top:3px; padding-top:3px; font-size:clamp(7px,0.55vw,9px); line-height:1.25; }
+}
+@media screen and (min-width:801px) and (max-height:650px) {
+  .right .tablehead h2 { font-size:clamp(19px,1.8vw,24px); }
+  .right .tag { padding:3px 6px; }
+  .right .prayer { padding-top:2px; padding-bottom:2px; }
+  .right .picon { width:20px; height:20px; }
+  .right .ptime { font-size:17px; }
+}
+
 </style><link rel="stylesheet" href="./mode-sholat.css"></head>
 <body><div class="page">
 <header><div class="brand weather-box" id="weatherBox" aria-label="Informasi cuaca wilayah"><span class="weather-icon" id="weatherIcon" aria-hidden="true">🌤️</span><div class="weather-details"><div class="weather-place" id="weatherPlace">Cuaca wilayah terpilih</div><div class="weather-current"><strong id="weatherTemp">--°C</strong><span id="weatherCondition">Memuat cuaca…</span></div></div></div><div class="header-info"><div class="header-clock-row"><span class="moon-phase-icon" id="moonPhaseIcon" role="img" aria-label="Fase bulan Hijriah belum tersedia">🌑</span><div class="header-clock" id="headerClock" aria-label="Jam sekarang">--:--:--</div></div><div class="header-calendar"><div id="headerGregorian">Memuat tanggal…</div><div id="headerHijri">Kalender Hijriah</div></div></div></header>
