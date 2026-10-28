@@ -276,6 +276,30 @@ header .header-date{margin-left:auto;flex-shrink:0}header .header-info{margin-le
 /* QRIS tetap ditampilkan pada seluruh ukuran layar, termasuk TV/PC/laptop dan HP. */
 
 /* Panel jadwal dikembalikan ke perilaku CSS normal. QRIS tetap tampil. */
+
+/* Desktop/TV frame sizing approved in preview; preserve all schedule, location, QRIS and audio logic. */
+@media screen and (min-width:801px) {
+  html, body { height:auto; min-height:100%; overflow-x:hidden; overflow-y:auto; }
+  .page { min-height:100dvh; height:auto; overflow:visible; gap:0; }
+  .dashboard { flex:0 0 auto; height:auto; min-height:0; align-items:stretch; }
+  .countdown-panel { min-height:286px; height:auto; padding:clamp(14px,1.8vw,24px); }
+  .right { height:auto; min-height:0; overflow:visible; padding:12px; }
+  .tablehead { margin-bottom:8px; }
+  .right #list { height:auto; max-height:none; overflow:visible; }
+  .right .prayer { padding:7px 5px; gap:10px; }
+  .right .picon { width:25px; height:25px; }
+  .right .ptime { font-size:20px; }
+  .right .pname { font-size:12px; line-height:1.15; }
+  .right .pdesc { font-size:10px; line-height:1.15; margin-top:2px; }
+  .right .foot { margin-top:8px; padding-top:7px; font-size:8px; line-height:1.4; }
+  .murottal-panel { margin-top:8px; padding:12px 16px; }
+  .murottal-heading h2 { font-size:25px; margin:2px 0 3px; }
+  .murottal-controls { margin-top:8px; gap:10px; }
+  .murottal-controls select { padding:7px 9px; }
+  .location:not(.location-picker-open) { margin-top:8px; padding:10px 14px; gap:10px; }
+  .location:not(.location-picker-open) .locname { font-size:11px; line-height:1.35; }
+  .location:not(.location-picker-open) .location-qris { width:clamp(64px,6vw,88px); max-height:88px; margin-top:5px; }
+}
 </style><link rel="stylesheet" href="./mode-sholat.css"></head>
 <body><div class="page">
 <header><div class="brand weather-box" id="weatherBox" aria-label="Informasi cuaca wilayah"><span class="weather-icon" id="weatherIcon" aria-hidden="true">🌤️</span><div class="weather-details"><div class="weather-place" id="weatherPlace">Cuaca wilayah terpilih</div><div class="weather-current"><strong id="weatherTemp">--°C</strong><span id="weatherCondition">Memuat cuaca…</span></div></div></div><div class="header-info"><div class="header-clock-row"><span class="moon-phase-icon" id="moonPhaseIcon" role="img" aria-label="Fase bulan Hijriah belum tersedia">🌑</span><div class="header-clock" id="headerClock" aria-label="Jam sekarang">--:--:--</div></div><div class="header-calendar"><div id="headerGregorian">Memuat tanggal…</div><div id="headerHijri">Kalender Hijriah</div></div></div></header>
