@@ -126,11 +126,49 @@ header .header-date{margin-left:auto;flex-shrink:0}header .header-info{margin-le
   .location:not(.location-picker-open) .locname { font-size:11px; line-height:1.35; }
   .location:not(.location-picker-open) .location-qris { width:clamp(64px,6vw,88px); max-height:88px; margin-top:5px; }
 }
+
+/* Kompas kiblat: tombol kecil di atas label Waktu Lokal. */
+.tablehead-tools{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 0 auto}
+.qibla-open-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:6px 9px;border:1px solid var(--gold);border-radius:4px;background:#fffdf7;color:var(--green);font:700 9px/1.2 "DM Sans",sans-serif;letter-spacing:.11em;cursor:pointer;white-space:nowrap}
+.qibla-open-btn:hover,.qibla-open-btn:focus-visible{background:#f4efe2;outline:2px solid #b28a4580;outline-offset:2px}
+.qibla-open-icon{font-size:17px;line-height:.8;color:var(--gold)}
+.qibla-overlay[hidden]{display:none!important}
+.qibla-overlay{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(24,35,27,.58);backdrop-filter:blur(4px)}
+.qibla-dialog{position:relative;width:min(100%,430px);max-height:min(92dvh,760px);overflow:auto;padding:22px;border:1px solid #d9c69f;border-radius:12px;background:var(--card);box-shadow:0 24px 80px #101a1480;text-align:center}
+.qibla-close{position:absolute;top:10px;right:10px;width:34px;height:34px;border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--green);font-size:21px;cursor:pointer}
+.qibla-kicker{font-size:9px;font-weight:700;letter-spacing:.2em;color:var(--gold)}
+.qibla-title{margin:5px 0 2px;font:600 30px/1.1 "Cormorant Garamond",serif;color:var(--green)}
+.qibla-subtitle{font-size:11px;color:var(--muted);line-height:1.5}
+.qibla-compass{position:relative;width:min(68vw,260px);aspect-ratio:1;margin:18px auto 14px;border:1px solid #d9c69f;border-radius:50%;background:radial-gradient(circle,#fffdf7 0 55%,#f4efe2 56% 68%,#fffdf7 69%);box-shadow:inset 0 0 0 7px #fffdf7,inset 0 0 0 8px #e7dfce,0 8px 24px #55452912}
+.qibla-compass:before,.qibla-compass:after{content:"";position:absolute;background:#e7dfce;left:50%;top:8%;width:1px;height:84%;transform:translateX(-50%)}
+.qibla-compass:after{transform:translateX(-50%) rotate(90deg)}
+.qibla-mark{position:absolute;font:700 11px "DM Sans",sans-serif;color:var(--muted)}
+.qibla-north{top:9%;left:50%;transform:translateX(-50%);color:var(--green)}
+.qibla-east{right:10%;top:50%;transform:translateY(-50%)}
+.qibla-south{bottom:9%;left:50%;transform:translateX(-50%)}
+.qibla-west{left:10%;top:50%;transform:translateY(-50%)}
+.qibla-needle{position:absolute;inset:0;display:grid;place-items:center;transform:rotate(var(--qibla-rotation,0deg));transition:transform .25s ease}
+.qibla-needle svg{width:78%;height:78%;overflow:visible}
+.qibla-needle .needle-shaft{stroke:var(--gold);stroke-width:4;stroke-linecap:round}
+.qibla-needle .needle-tip{fill:var(--green);stroke:var(--gold);stroke-width:1.5}
+.qibla-kaaba{fill:#17251d;stroke:#b28a45;stroke-width:1.4}
+.qibla-kaaba-band{fill:#d7b46d}
+.qibla-center{position:absolute;left:50%;top:50%;width:12px;height:12px;border:2px solid var(--gold);border-radius:50%;background:var(--card);transform:translate(-50%,-50%);z-index:2}
+.qibla-bearing{font:700 30px/1 "Roboto Mono",monospace;color:var(--green);font-variant-numeric:tabular-nums}
+.qibla-bearing small{font:600 11px "DM Sans",sans-serif;color:var(--gold)}
+.qibla-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.qibla-meta>div{padding:10px;border:1px solid var(--line);border-radius:6px;background:#fffdf7}
+.qibla-meta span{display:block;font-size:9px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.qibla-meta strong{display:block;margin-top:4px;font-size:13px;color:var(--green)}
+.qibla-status{min-height:34px;margin-top:12px;font-size:10px;line-height:1.5;color:var(--muted)}
+.qibla-calibrate{margin-top:6px;padding:9px 12px;border:1px solid var(--line);border-radius:5px;background:#f4efe2;color:var(--green);font:600 10px "DM Sans",sans-serif;cursor:pointer}
+@media(max-width:480px){.tablehead-tools{gap:5px}.qibla-open-btn{font-size:8px;padding:5px 7px}.qibla-dialog{padding:18px 14px}.qibla-title{font-size:27px}.qibla-compass{width:min(68vw,230px)}}
+@media(prefers-reduced-motion:reduce){.qibla-needle{transition:none}}
 </style><link rel="stylesheet" href="./mode-sholat.css"></head>
 <body><div class="page">
 <header><div class="brand weather-box" id="weatherBox" aria-label="Informasi cuaca wilayah"><span class="weather-icon" id="weatherIcon" aria-hidden="true">🌤️</span><div class="weather-details"><div class="weather-place" id="weatherPlace">Cuaca wilayah terpilih</div><div class="weather-current"><strong id="weatherTemp">--°C</strong><span id="weatherCondition">Memuat cuaca…</span></div></div></div><div class="header-info"><div class="header-clock-row"><span class="moon-phase-icon" id="moonPhaseIcon" role="img" aria-label="Fase bulan Hijriah belum tersedia">🌑</span><div class="header-clock" id="headerClock" aria-label="Jam sekarang">--:--:--</div></div><div class="header-calendar"><div id="headerGregorian">Memuat tanggal…</div><div id="headerHijri">Kalender Hijriah</div></div></div></header>
 <main class="dashboard"><section class="panel left countdown-panel"><div class="focus-prayer" id="nextName"></div><div class="focus-countdown" id="countdown"></div></section>
-<section class="panel right"><div class="tablehead"><h2>Jadwal Sholat<span class="schedule-city" id="scheduleCity">Balikpapan</span></h2><span class="tag">Waktu Lokal</span></div><div id="list"></div><div class="foot">Jadwal Sholat bersumber dari data Kementerian Agama RI. Waktu dapat berbeda dari penetapan resmi setempat.</div></section></main>
+<section class="panel right"><div class="tablehead"><h2>Jadwal Sholat<span class="schedule-city" id="scheduleCity">Balikpapan</span></h2><div class="tablehead-tools"><button type="button" class="qibla-open-btn" id="qiblaOpen" aria-haspopup="dialog" aria-controls="qiblaDialog"><span class="qibla-open-icon" aria-hidden="true">◎</span><span>ARAH KIBLAT</span></button><span class="tag">Waktu Lokal</span></div></div><div id="list"></div><div class="foot">Jadwal Sholat bersumber dari data Kementerian Agama RI. Waktu dapat berbeda dari penetapan resmi setempat.</div></section></main>
 <section class="murottal-panel" aria-label="Pemutar murottal">
   <div class="murottal-heading"><div><div class="murottal-kicker">AUDIO AL-QUR'AN</div><h2>Murottal</h2><div class="murottal-status" id="murottalStatus" role="status">Menunggu lokasi dan jadwal sholat…</div></div><div class="murottal-badge" id="murottalBadge">OTOMATIS</div></div>
   <div class="murottal-controls">
@@ -145,6 +183,36 @@ header .header-date{margin-left:auto;flex-shrink:0}header .header-info{margin-le
 </section>
 <section class="location location-picker-open" aria-label="Pemilih lokasi"><div class="location-picker-card"><div class="location-picker-heading"><div class="loctitle">⌖ &nbsp; Lokasi Jadwal Sholat</div><div class="locname" id="locName">Balikpapan, Kalimantan Timur</div><div class="status" id="status" role="status">Memuat daftar kabupaten/kota…</div><img class="location-qris" src="./image/QRIS.png" alt="QRIS untuk pembayaran" loading="eager" decoding="async"></div><div class="controls"><input id="citySearch" type="search" list="citySuggestions" placeholder="Cari kota, kabupaten, atau provinsi…" aria-label="Cari dan pilih kabupaten, kota, atau provinsi" autocomplete="off"><datalist id="citySuggestions"><option value="Memuat daftar kabupaten/kota…"></option></datalist></div></div></section>
 </div>
+
+<section class="qibla-overlay" id="qiblaDialog" hidden aria-hidden="true">
+ <div class="qibla-dialog" role="dialog" aria-modal="true" aria-labelledby="qiblaTitle">
+  <button type="button" class="qibla-close" id="qiblaClose" aria-label="Tutup kompas kiblat">×</button>
+  <div class="qibla-kicker">PENUNJUK ARAH IBADAH</div>
+  <h2 class="qibla-title" id="qiblaTitle">Kompas Kiblat</h2>
+  <div class="qibla-subtitle" id="qiblaPlace">Menentukan lokasi…</div>
+  <div class="qibla-compass" aria-label="Kompas arah kiblat">
+   <span class="qibla-mark qibla-north">U</span><span class="qibla-mark qibla-east">T</span><span class="qibla-mark qibla-south">S</span><span class="qibla-mark qibla-west">B</span>
+   <div class="qibla-needle" id="qiblaNeedle" style="--qibla-rotation:0deg">
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+     <path class="needle-shaft" d="M50 50 L50 15"/>
+     <path class="needle-tip" d="M50 8 L42 27 L50 23 L58 27 Z"/>
+     <path class="qibla-kaaba" d="M43 7 L50 2 L57 7 L57 14 L50 18 L43 14 Z"/>
+     <path class="qibla-kaaba-band" d="M43 8 L50 11 L57 8 L57 10 L50 13 L43 10 Z"/>
+     <path class="needle-shaft" d="M50 50 L50 78" opacity=".28"/>
+    </svg>
+   </div>
+   <div class="qibla-center"></div>
+  </div>
+  <div class="qibla-bearing" id="qiblaBearing">—<small>°</small></div>
+  <div class="qibla-meta">
+   <div><span>Jarak ke Ka'bah</span><strong id="qiblaDistance">—</strong></div>
+   <div><span>Arah</span><strong id="qiblaDirection">—</strong></div>
+  </div>
+  <div class="qibla-status" id="qiblaStatus" role="status">Meminta izin lokasi perangkat…</div>
+  <button type="button" class="qibla-calibrate" id="qiblaCalibrate">Perbarui lokasi &amp; kompas</button>
+ </div>
+</section>
+
 <script src="./mode-sholat.js?v=20261022-auto-hijri-mode-2"></script><script>
 (()=>{'use strict';const $=id=>document.getElementById(id);const prayers=[{key:'Imsak',name:'IMSAK',desc:'Bersiap memasuki waktu subuh',icon:'☾',ramadanOnly:true},{key:'Fajr',name:'SUBUH',desc:'Fajar',icon:'☾'},{key:'Sunrise',name:'TERBIT',desc:'Matahari terbit',icon:'☼',notPrayer:true},{key:'Dhuhr',name:'ZUHUR',desc:'Tengah hari',icon:'☼'},{key:'Asr',name:'ASAR',desc:'Sore hari',icon:'✧'},{key:'Maghrib',name:'MAGHRIB',desc:'Matahari terbenam',icon:'◒'},{key:'Isha',name:'ISYA',desc:'Malam hari',icon:'☽'}];const audioPrayerKeys=new Set(['Fajr','Dhuhr','Asr','Maghrib','Isha']);const bellOnSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>';const bellOffSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/><path d="M3 3 21 21"/></svg>';/* Audio sholat nonaktif secara default setiap halaman dibuka; pengguna mengaktifkan tiap bel secara manual. */let prayerAudioEnabled={Fajr:false,Dhuhr:false,Asr:false,Maghrib:false,Isha:false};function isPrayerAudioEnabled(key){return prayerAudioEnabled[key]===true};const months=['Muharram','Safar','Rabiul Awal','Rabiul Akhir','Jumadil Awal','Jumadil Akhir','Rajab','Syakban','Ramadan','Syawal','Zulkaidah','Zulhijah'];let times=null,hijriText='',isRamadanActive=false,city='Balikpapan',cityLabel='KOTA BALIKPAPAN — KALIMANTAN TIMUR',provinceName='Kalimantan Timur',districtName='',cityCategory='KOTA',regionData=null,regionOptions=[],districtOptions=[],districtIndexPromise=null,loadRequestId=0,searchGeneration=0;const SAVED_LOCATION_KEY='showTimeSelectedLocationV1';function readSavedLocation(){try{const raw=localStorage.getItem(SAVED_LOCATION_KEY);if(!raw)return null;const saved=JSON.parse(raw);return saved&&saved.city&&saved.province?saved:null}catch(e){console.warn('Pilihan lokasi tersimpan tidak dapat dibaca:',e);return null}}function saveSelectedLocation(){try{localStorage.setItem(SAVED_LOCATION_KEY,JSON.stringify({city,cityLabel,cityCategory,province:provinceName,districtName:districtName||'',savedAt:Date.now()}))}catch(e){console.warn('Pilihan lokasi tidak dapat disimpan:',e)}}
 const dateFmtOptions={weekday:'long',day:'numeric',month:'long',year:'numeric'};let activeZone='Asia/Makassar',activeZoneLabel='WITA',lastLoadedLocalDate='';
@@ -464,6 +532,29 @@ initMurottal();
 
 setInterval(()=>{schedulePrayerAudio().catch(e=>console.error('Penjadwalan audio gagal',e))},1000);
 
+
+
+/* Kompas kiblat: bearing geodesik ke Ka'bah, lokasi GPS dengan fallback koordinat daerah terpilih. */
+(()=>{
+ const button=document.getElementById('qiblaOpen'),overlay=document.getElementById('qiblaDialog'),close=document.getElementById('qiblaClose'),refresh=document.getElementById('qiblaCalibrate');
+ if(!button||!overlay)return;
+ const el=id=>document.getElementById(id),kaaba={lat:21.4224779,lon:39.8251832};
+ let qiblaBearing=null,deviceHeading=null,orientationActive=false,orientationHandler=null,requesting=false;
+ const rad=d=>d*Math.PI/180,deg=r=>r*180/Math.PI;
+ function bearingBetween(lat,lon){const p1=rad(lat),p2=rad(kaaba.lat),dl=rad(kaaba.lon-lon);const y=Math.sin(dl)*Math.cos(p2),x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl);return (deg(Math.atan2(y,x))+360)%360}
+ function distanceBetween(lat,lon){const r=6371,p1=rad(lat),p2=rad(kaaba.lat),dp=rad(kaaba.lat-lat),dl=rad(kaaba.lon-lon);const a=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return 2*r*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))}
+ function directionName(d){const names=['Utara','Timur Laut','Timur','Tenggara','Selatan','Barat Daya','Barat','Barat Laut'];return names[Math.round(d/45)%8]}
+ function paint(){if(qiblaBearing===null)return;const rotation=qiblaBearing-(deviceHeading===null?0:deviceHeading);el('qiblaNeedle').style.setProperty('--qibla-rotation',rotation+'deg');el('qiblaBearing').innerHTML=qiblaBearing.toFixed(1)+'<small>° dari utara</small>';el('qiblaDirection').textContent=directionName(qiblaBearing);el('qiblaStatus').textContent=deviceHeading===null?'Arah dihitung dari utara geografis. Sensor kompas perangkat belum aktif; jarum belum mengikuti putaran perangkat.':'Kompas aktif · arah jarum mengikuti orientasi perangkat. Jauhkan dari benda bermagnet.'}
+ function stopOrientation(){if(orientationHandler){window.removeEventListener('deviceorientationabsolute',orientationHandler);window.removeEventListener('deviceorientation',orientationHandler);orientationHandler=null}orientationActive=false;deviceHeading=null}
+ function startOrientation(){if(orientationActive)return;const handler=e=>{let h=Number.isFinite(e.webkitCompassHeading)?e.webkitCompassHeading:null;if(h===null&&e.absolute===true&&Number.isFinite(e.alpha))h=(360-e.alpha)%360;if(h===null&&Number.isFinite(e.alpha)&&('ondeviceorientationabsolute' in window))h=(360-e.alpha)%360;if(h!==null){deviceHeading=(h+360)%360;orientationActive=true;paint()}};orientationHandler=handler;window.addEventListener('deviceorientationabsolute',handler,true);window.addEventListener('deviceorientation',handler,true);setTimeout(()=>{if(!orientationActive&&overlay&&!overlay.hidden)el('qiblaStatus').textContent='Sensor kompas tidak tersedia atau izin sensor belum diberikan. Bearing tetap ditampilkan dari utara.'},2500)}
+ async function getAreaCoordinates(){const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('id-ID').replace(/^(kabupaten|kota administrasi|kota|kab\.?|provinsi)\s+/,'').trim();try{const r=await fetch('./data/kabupaten-kota-koordinat.json',{cache:'force-cache'});if(r.ok){const data=await r.json();const place=typeof districtName!=='undefined'&&districtName?districtName:city;const found=(data.regions||[]).find(x=>norm(x.name)===norm(place)&&(!provinceName||norm(x.province)===norm(provinceName)))||(data.regions||[]).find(x=>norm(x.name)===norm(city)&&(!provinceName||norm(x.province)===norm(provinceName)));if(found&&Number.isFinite(Number(found.lat))&&Number.isFinite(Number(found.lon)))return {lat:Number(found.lat),lon:Number(found.lon),label:place+', '+provinceName}}}catch(e){console.warn('Koordinat daerah untuk kompas tidak tersedia:',e)}return null}
+ function applyLocation(lat,lon,label,source){qiblaBearing=bearingBetween(lat,lon);const km=distanceBetween(lat,lon);el('qiblaPlace').textContent=label;el('qiblaDistance').textContent=km.toLocaleString('id-ID',{maximumFractionDigits:0})+' km';deviceHeading=null;paint();el('qiblaStatus').textContent=source+' · Arah dihitung dari utara geografis. Izinkan sensor kompas agar jarum dapat mengikuti arah hadap perangkat.';startOrientation()}
+ async function locate(){if(requesting)return;requesting=true;el('qiblaStatus').textContent='Meminta izin lokasi perangkat…';try{if(navigator.geolocation){const pos=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:10000,maximumAge:300000}));applyLocation(pos.coords.latitude,pos.coords.longitude,'Lokasi perangkat · GPS','Lokasi GPS berhasil diperoleh.');return}}catch(e){console.warn('GPS tidak tersedia/diizinkan untuk kompas:',e)}const fallback=await getAreaCoordinates();if(fallback){applyLocation(fallback.lat,fallback.lon,fallback.label,'Memakai koordinat kabupaten/kota terpilih');el('qiblaStatus').textContent='GPS tidak tersedia/diizinkan. Bearing memakai titik koordinat wilayah terpilih; hasil dapat berbeda dari posisi tepat Anda.'}else{el('qiblaStatus').textContent='Lokasi tidak tersedia. Izinkan akses lokasi pada browser, lalu coba lagi.'}requesting=false}
+ function open(){overlay.hidden=false;overlay.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';if(!qiblaBearing)locate();else startOrientation();close.focus()}
+ function hide(){overlay.hidden=true;overlay.setAttribute('aria-hidden','true');document.body.style.overflow='';stopOrientation();button.focus()}
+ button.addEventListener('click',open);close.addEventListener('click',hide);refresh.addEventListener('click',()=>{stopOrientation();qiblaBearing=null;locate()});overlay.addEventListener('click',e=>{if(e.target===overlay)hide()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden)hide()});
+ if(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==='function'){button.addEventListener('click',async()=>{try{const permission=await DeviceOrientationEvent.requestPermission();if(permission==='granted')startOrientation();else el('qiblaStatus').textContent='Izin sensor kompas ditolak. Bearing tetap dihitung dari utara.'}catch(e){console.warn('Izin sensor kompas gagal:',e)}},{once:true})}
+})();
 
 dates();setInterval(()=>{dates();next()},1000);setInterval(()=>{if(!document.hidden)loadWeather()},300000);loadRegions()})();
 </script></body></html>
