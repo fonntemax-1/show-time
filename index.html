@@ -339,6 +339,21 @@ return {total,untilAdhan,valid:true};
 }
 function localClockTarget(prayerMinute,now=new Date()){const p=zonedParts(now),current=p.hour*3600+p.minute*60+p.second;let delta=prayerMinute*60-current;if(delta<0)delta+=86400;return now.getTime()+delta*1000}
 function localClockTargetIncludingPast(prayerMinute,now=new Date()){const p=zonedParts(now),current=p.hour*3600+p.minute*60+p.second;return now.getTime()+(prayerMinute*60-current)*1000}
+/* Android Chrome: daftarkan rangkaian audio sholat sebagai sesi media agar pemutaran latar/layar terkunci lebih kompatibel. Ini membantu browser mempertahankan sesi audio, tetapi bukan pengganti Android Foreground Service. */
+let prayerMediaSessionActive=false;
+function updatePrayerMediaSession(label){
+ if(!('mediaSession' in navigator))return;
+ try{
+  if('MediaMetadata' in window)navigator.mediaSession.metadata=new MediaMetadata({title:(label||'Audio sholat').replace(/\.mp3$/i,''),artist:'Show Time · Jadwal Sholat',album:'Rangkaian audio sholat'});
+  navigator.mediaSession.playbackState='playing';
+  prayerMediaSessionActive=true;
+ }catch(e){console.warn('Media Session API tidak tersedia penuh:',e)}
+}
+function clearPrayerMediaSession(){
+ if(!prayerMediaSessionActive||!('mediaSession' in navigator))return;
+ try{navigator.mediaSession.playbackState='none';navigator.mediaSession.metadata=null}catch(e){console.warn('Status Media Session gagal direset:',e)}
+ prayerMediaSessionActive=false;
+}
 async function runPrayerSequence(sequence,plannedStart,adhanTarget,key){
 if(audioSequenceRunning)return;
 const locationGeneration=audioLocationGeneration;
@@ -352,7 +367,7 @@ const adhanStep=sequence[adhanIndex],adhanAudio=prayerAudio.get(adhanStep.file);
 if(!adhanAudio||!Number.isFinite(adhanAudio.duration)||adhanAudio.duration<=0){console.warn('Durasi audio adzan belum tersedia; rangkaian tidak dijalankan:',key,adhanStep.file);return}
 audioSequenceRunning=true;
 let currentAudio=null,stepTimer=null,adhanTimer=null,imsakSirineTimer=null,currentCleanup=null,finished=false,beepStarted=false,beepCompleted=false,beepEndedAt=0,activeStageIndex=-1;const beepIndex=sequence.findIndex(step=>step.file==='beep.mp3');const beepAudio=prayerAudio.get('beep.mp3');const gapAfterBeep=beepIndex>=0&&sequence[beepIndex+1]?.gap?sequence[beepIndex+1].gap*1000:0;
-const finish=()=>{if(finished)return;finished=true;clearTimeout(stepTimer);clearTimeout(adhanTimer);clearTimeout(imsakSirineTimer);if(currentCleanup){currentCleanup();currentCleanup=null}audioSequenceRunning=false;if(activeSequenceControl?.key===key)activeSequenceControl=null};
+const finish=()=>{if(finished)return;finished=true;clearTimeout(stepTimer);clearTimeout(adhanTimer);clearTimeout(imsakSirineTimer);if(currentCleanup){currentCleanup();currentCleanup=null}audioSequenceRunning=false;clearPrayerMediaSession();if(activeSequenceControl?.key===key)activeSequenceControl=null};
 const stopCurrent=()=>{if(currentCleanup){currentCleanup();currentCleanup=null}if(currentAudio){try{currentAudio.pause();currentAudio.currentTime=0}catch(e){}currentAudio=null}};
 activeSequenceControl={key,stop:()=>{stopCurrent();finish()}};
 const playMedia=(audio,onDone,label,offsetSeconds=0,onStarted=null)=>{
@@ -368,8 +383,8 @@ if(settled||started||audio.readyState<2)return;
 if(!force&&targetOffset>0.25&&Math.abs((audio.currentTime||0)-targetOffset)>0.75)return;
 started=true;clearTimeout(seekWatchdog);clearTimeout(readyWatchdog);
 const p=audio.play();
-if(p&&p.then)p.then(()=>{if(!settled&&typeof onStarted==='function')onStarted(Date.now())}).catch(e=>{console.warn('Browser memblokir audio:',label,e);advance()});
-else if(typeof onStarted==='function')onStarted(Date.now());
+if(p&&p.then)p.then(()=>{if(!settled){updatePrayerMediaSession(label);if(typeof onStarted==='function')onStarted(Date.now())}}).catch(e=>{console.warn('Browser memblokir audio:',label,e);advance()});
+else{updatePrayerMediaSession(label);if(typeof onStarted==='function')onStarted(Date.now())}
 };
 currentCleanup=cleanup;audio.addEventListener('ended',ended);audio.addEventListener('error',failed);audio.addEventListener('seeked',tryStart);audio.addEventListener('canplay',tryStart);
 try{
