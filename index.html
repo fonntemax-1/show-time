@@ -474,18 +474,75 @@ if(now>plannedStart)console.info('Catch-up audio diselaraskan ke anchor waktu sh
 playPrelude(stageIndex,offset);return;
 }
 function ramadanMaghribTiming(sequence,maghribStart,untilAdhanMs){let beforeSirine=0;for(const step of sequence){if(step.file==='sirine.mp3')return {plannedStart:maghribStart-beforeSirine,target:maghribStart+untilAdhanMs-beforeSirine,beforeSirine};beforeSirine+=step.gap?step.gap*1000:(Number(prayerAudio.get(step.file)?.duration)||0)*1000}return null}
+async function runFridayQiroah(plannedStart,stopAt){
+if(audioSequenceRunning)return;
+const locationGeneration=audioLocationGeneration;
+const duration=Number(await loadAudioMetadata('qiroah.mp3'));
+if(locationGeneration!==audioLocationGeneration)return;
+if(!Number.isFinite(duration)||duration<=0){console.warn('Qiroah Jumat ditahan: durasi audio belum tersedia.');return}
+if(!audioUnlocked||!isPrayerAudioEnabled('Dhuhr'))return;
+const now=Date.now();
+if(now>=stopAt){console.info('Qiroah Jumat tidak diputar karena waktu berhenti 1 menit sebelum azan sudah terlewati.');return}
+const audio=prayerAudio.get('qiroah.mp3');
+if(!audio)return;
+const offset=Math.max(0,(now-plannedStart)/1000);
+if(offset>=duration)return;
+audioSequenceRunning=true;
+let finished=false,stopTimer=null;
+const cleanup=()=>{
+if(finished)return;
+finished=true;
+clearTimeout(stopTimer);
+audio.removeEventListener('ended',onEnded);
+audio.removeEventListener('error',onError);
+try{audio.pause();audio.currentTime=0}catch(e){}
+audioSequenceRunning=false;
+if(activeSequenceControl?.key==='Dhuhr')activeSequenceControl=null;
+};
+const onEnded=()=>{console.info('Qiroah Jumat selesai sebelum batas azan.');cleanup()};
+const onError=()=>{console.warn('Qiroah Jumat gagal diputar.',audio.error?.code);cleanup()};
+activeSequenceControl={key:'Dhuhr',stop:cleanup};
+audio.addEventListener('ended',onEnded,{once:true});
+audio.addEventListener('error',onError,{once:true});
+try{
+audio.pause();
+audio.currentTime=offset;
+stopTimer=setTimeout(()=>{
+console.info('Qiroah Jumat dihentikan 1 menit sebelum azan Jum\'at.',{stopAt:new Date(stopAt).toLocaleTimeString(),actual:new Date().toLocaleTimeString()});
+cleanup();
+},Math.max(0,stopAt-Date.now()));
+const playResult=audio.play();
+if(playResult&&playResult.catch)playResult.catch(error=>{console.warn('Browser tidak dapat memutar Qiroah Jumat:',error);cleanup()});
+console.info('Qiroah Jumat dijadwalkan berdasarkan durasi asli audio.',{plannedStart:new Date(plannedStart).toLocaleTimeString(),stopAt:new Date(stopAt).toLocaleTimeString(),durationSeconds:duration,offsetSeconds:Number(offset.toFixed(2))});
+}catch(error){console.warn('Persiapan Qiroah Jumat gagal:',error);cleanup()}
+}
 async function schedulePrayerAudio(){
 if(!times||!city||audioScheduling||!audioUnlocked)return;
 audioScheduling=true;
 try{
 const today=zonedParts(),dateKey=localDateKey(today);
-const context=[city,activeZone,dateKey,isRamadanActive?1:0,mins(times.Fajr),mins(times.Dhuhr),mins(times.Asr),mins(times.Maghrib),mins(times.Isha)].join('|');
+const context=[city,activeZone,dateKey,isRamadanActive?1:0,mins(times.Fajr),mins(times.Dhuhr),mins(times.Asr),mins(times.Maghrib),mins(times.Isha),isFridayLocal()?1:0].join('|');
 if(audioPlanContext&&audioPlanContext!==context){for(const timer of audioScheduledTimers)clearTimeout(timer);audioScheduledTimers=[];audioScheduled.clear()}
 audioPlanContext=context;
 const jobs=[{key:'Fajr'},{key:'Dhuhr'},{key:'Asr'},{key:'Maghrib'},{key:'Isha'}];
 for(const job of jobs){
 if(!isPrayerAudioEnabled(job.key))continue;
 const minute=mins(times[job.key]);if(minute<0)continue;
+if(job.key==='Dhuhr'&&isFridayLocal()){
+const qiroahDuration=Number(await loadAudioMetadata('qiroah.mp3'));
+if(!Number.isFinite(qiroahDuration)||qiroahDuration<=0){console.warn('Jadwal Qiroah Jumat ditahan: durasi asli qiroah.mp3 belum tersedia.');continue}
+const fridayAdhanTarget=localClockTargetIncludingPast(minute);
+const fridayStopAt=fridayAdhanTarget-60000;
+const fridayStart=fridayStopAt-qiroahDuration*1000;
+if(fridayAdhanTarget<=Date.now())continue;
+const fridayId='Dhuhr-Friday-Qiroah|'+city+'|'+Math.floor(fridayAdhanTarget/60000);
+if(audioScheduled.has(fridayId))continue;
+audioScheduled.add(fridayId);
+const fridayTimer=setTimeout(()=>{if(!isPrayerAudioEnabled('Dhuhr')){audioScheduled.delete(fridayId);return}runFridayQiroah(fridayStart,fridayStopAt)},Math.max(0,fridayStart-Date.now()));
+audioScheduledTimers.push(fridayTimer);
+console.info('Mode audio Jumat: hanya Qiroah; berhenti 1 menit sebelum azan Jum\'at.',{start:new Date(fridayStart).toLocaleTimeString(),stop:new Date(fridayStopAt).toLocaleTimeString(),adhan:new Date(fridayAdhanTarget).toLocaleTimeString(),qiroahDurationSeconds:qiroahDuration});
+continue;
+}
 if(job.key==='Maghrib'&&isRamadanActive)await loadAudioMetadata('beep.mp3');
 let sequence=prayerSequence(job.key,isRamadanActive);
 if(job.key==='Fajr'&&isRamadanActive){
