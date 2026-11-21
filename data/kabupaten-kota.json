@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-20T22:59:08+00:00",
+  "updatedAt": "2026-11-21T22:04:16+00:00",
   "source": "https://emsifa.github.io/api-wilayah-indonesia/api",
   "scheduleProvider": "AlAdhan API method 20 is queried after a city is selected",
   "provinceCount": 34,
